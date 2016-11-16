@@ -6,9 +6,9 @@ from TreeNode import TreeNode
 
 
 class DecisionTree(object):
-    '''
+    """
     A decision tree class.
-    '''
+    """
 
     def __init__(self, impurity_criterion='entropy'):
         '''

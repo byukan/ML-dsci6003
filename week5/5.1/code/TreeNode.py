@@ -1,24 +1,30 @@
 from collections import Counter
 import numpy as np
 
+
 class TreeNode(object):
-    '''
+    """
     A node class for a decision tree.
-    '''
-    def __init__(self):
+    """
+    def __init__(self, value, left = None, right = None):
+
+        self.value = value
+        self.left = left
+        self.right = right
+
         self.column = None  # (int)    index of feature to split on
         self.value = None  # value of the feature to split on
         self.categorical = True  # (bool) whether or not node is split on
-                                 # categorial feature
-        self.name = None    # (string) name of feature (or name of class in the
-                            #          case of a list)
-        self.left = None    # (TreeNode) left child
-        self.right = None   # (TreeNode) right child
-        self.leaf = False   # (bool)   true if node is a leaf, false otherwise
+        # categorial feature
+        self.name = None  # (string) name of feature (or name of class in the
+        #          case of a list)
+        self.left = None  # (TreeNode) left child
+        self.right = None  # (TreeNode) right child
+        self.leaf = False  # (bool)   true if node is a leaf, false otherwise
         self.classes = Counter()  # (Counter) only necessary for leaf node:
-                                  #           key is class name and value is
-                                  #           count of the count of data points
-                                  #           that terminate at this leaf
+        #           key is class name and value is
+        #           count of the count of data points
+        #           that terminate at this leaf
 
     def predict_one(self, x):
         '''
