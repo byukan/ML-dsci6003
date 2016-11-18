@@ -193,3 +193,77 @@ class DecisionTree(object):
         Return string representation of the Decision Tree.
         '''
         return str(self.root)
+
+
+
+# #_make_split
+# #not categorical tests
+# data = [ [1,1,0], [1,1,0], [2,1,1], [2,1,1] ]
+# data = np.asarray(data)
+# X = data[:,0:2]
+# y = data[:,-1]
+# dt = DecisionTree()
+# dt.categorical = False
+# X1, y1, X2, y2 = dt._make_split(X, y, split_index=0, split_value=2)
+# assert np.allclose(X2,[ [2,1], [2,1] ])
+# assert np.allclose(y2,[ 1,1 ])
+# assert np.allclose(X1,[ [1,1], [1,1] ])
+# assert np.allclose(y1,[ 0,0 ])
+#
+# #_make_split
+# #categorical tests
+# data = [ ['a',1,0], ['a',1,0], ['b',1,1], ['c',1,1] ]
+# data = np.asarray(data)
+# X = data[:,0:2]
+# y = data[:,-1]
+# dt = DecisionTree()
+# dt.categorical = True
+# X1, y1, X2, y2 = dt._make_split(X, y, split_index=0, split_value='a')
+# assert sum(X1[:,0]=='a')==2
+# assert sum(y1=='1')==0
+# assert sum(X2[:,0]=='a')==0
+# assert sum(y2=='1')==2
+#
+# [5:34]
+# def _make_split(self, X, y, split_index, split_value):
+#        '''
+#        INPUT:
+#            - X: 2d numpy array
+#            - y: 1d numpy array
+#            - split_index: int (index of feature)
+#            - split_value: int/float/bool/str (value of feature)
+#        OUTPUT:
+#            - X1: 2d numpy array (feature matrix for subset 1)
+#            - y1: 1d numpy array (labels for subset 1)
+#            - X2: 2d numpy array (feature matrix for subset 2)
+#            - y2: 1d numpy array (labels for subset 2)
+#        Return the two subsets of the dataset achieved by the given feature and
+#        value to split on.
+#        Call the method like this:
+#        X1, y1, X2, y2 = self._make_split(X, y, split_index, split_value)
+#        X1, y1 is a subset of the data.
+#        X2, y2 is the other subset of the data.
+#        '''
+#
+#        # * slice the split column from X with the split_index
+#        split_column = X[:,split_index]
+#
+#        # * if the variable of this column is categorical
+#        if self.categorical:
+#            # * select the indices of the rows in the column
+#            #  with the split_value (T/F) into one set of indices (call them A)
+#            A = split_value == split_column
+#            # * select the indices of the rows in the column
+#            # that don't have the split_value into another
+#            #  set of indices (call them B)
+#            B = split_value != split_column
+#        else:
+#            # * else if the variable is not categorical
+#            # * select the indices of the rows in the column
+#            #  less than the split value into one set of indices (call them A)
+#            A = split_column < split_value
+#            # * select the indices of the rows in the column
+#            #  greater or equal to  the split value into
+#            # another set of indices (call them B)
+#            B = split_column >= split_value
+#        return X[A], y[A], X[B], y[B]

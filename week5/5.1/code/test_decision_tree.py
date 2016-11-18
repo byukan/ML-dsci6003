@@ -97,3 +97,8 @@ def test_predict():
     n.eq_(result, actual, message)
 
 
+def main():
+    test_entropy()
+
+
+main()
