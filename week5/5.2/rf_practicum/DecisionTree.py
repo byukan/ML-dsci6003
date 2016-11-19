@@ -1,5 +1,6 @@
 print("you'll see this if you imported DecisionTree.py")
 
+import random
 import numpy as np
 import math
 from collections import Counter
@@ -10,11 +11,14 @@ class DecisionTree(object):
     """
     A decision tree class.
     """
-
-    def __init__(self, impurity_criterion='entropy'):
+    def __init__(self, num_features = None, impurity_criterion='entropy'):
         """
         Initialize an empty DecisionTree.
+        :param impurity_criterion:
+        :param num_features: number of features to consider at each node in choosing the best split
         """
+
+        self.num_features = num_features
 
         self.root = None  # root Node
         self.feature_names = None  # string names of features (for interpreting
@@ -49,8 +53,8 @@ class DecisionTree(object):
 
         # Create True/False array of whether the variable is categorical
         is_categorical = lambda x: isinstance(x, str) or \
-                                   isinstance(x, bool) or \
-                                   isinstance(x, unicode)
+                                   isinstance(x, bool)
+                                   # isinstance(x, unicode)
         self.categorical = np.vectorize(is_categorical)(X[0])
 
         self.root = self._build_tree(X, y)
@@ -144,42 +148,184 @@ class DecisionTree(object):
 
         return 1 - total
 
+
+
+
     def _make_split(self, X, y, split_index, split_value):
+       '''
+       INPUT:
+           - X: 2d numpy array
+           - y: 1d numpy array
+           - split_index: int (index of feature)
+           - split_value: int/float/bool/str (value of feature)
+       OUTPUT:
+           - X1: 2d numpy array (feature matrix for subset 1)
+           - y1: 1d numpy array (labels for subset 1)
+           - X2: 2d numpy array (feature matrix for subset 2)
+           - y2: 1d numpy array (labels for subset 2)
+       Return the two subsets of the dataset achieved by the given feature and
+       value to split on.
+       Call the method like this:
+       X1, y1, X2, y2 = self._make_split(X, y, split_index, split_value)
+       X1, y1 is a subset of the data.
+       X2, y2 is the other subset of the data.
+       '''
+
+       # * slice the split column from X with the split_index
+       split_column = X[:,split_index]
+
+       # * if the variable of this column is categorical
+       if self.categorical.any():
+           # * select the indices of the rows in the column
+           #  with the split_value (T/F) into one set of indices (call them A)
+           A = split_value == split_column
+           # * select the indices of the rows in the column
+           # that don't have the split_value into another
+           #  set of indices (call them B)
+           B = split_value != split_column
+       else:
+           # * else if the variable is not categorical
+           # * select the indices of the rows in the column
+           #  less than the split value into one set of indices (call them A)
+           A = split_column < split_value
+           # * select the indices of the rows in the column
+           #  greater or equal to  the split value into
+           # another set of indices (call them B)
+           B = split_column >= split_value
+
+       return X[A], y[A], X[B], y[B]
+
+    def _information_gain(self, y, y1, y2):
+        '''
+        INPUT:
+            - y: 1d numpy array
+            - y1: 1d numpy array (labels for subset 1)
+            - y2: 1d numpy array (labels for subset 2)
+        OUTPUT:
+            - float
+        Return the information gain of making the given split.
+        Use self.impurity_criterion(y) rather than calling _entropy or _gini
+        directly.
+        '''
+        # * set total equal to the impurity_criterion
+        total = self.impurity_criterion(y)
+
+        # * for each of the possible splits y1 and y2
+        partial_total = 0
+        for data in [y1,y2]:
+            # * calculate the impurity_criterion of the split
+            # * subtract this value from the total, multiplied by split_size/y_size
+            partial_total += self.impurity_criterion(data) * len(data)/len(y)
+
+        total = (total - partial_total)
+
+        return total
+
+
+    def _choose_split_index(self, X, y, rand_features = True):
         """
         INPUT:
             - X: 2d numpy array
             - y: 1d numpy array
-            - split_index: int (index of feature)
-            - split_value: int/float/bool/str (value of feature)
         OUTPUT:
-            - X1: 2d numpy array (feature matrix for subset 1)
-            - y1: 1d numpy array (labels for subset 1)
-            - X2: 2d numpy array (feature matrix for subset 2)
-            - y2: 1d numpy array (labels for subset 2)
-        Return the two subsets of the dataset achieved by the given feature and
-        value to split on.
+            - index: int (index of feature)
+            - value: int/float/bool/str (value of feature)
+            - splits: (2d array, 1d array, 2d array, 1d array)
+        Determine which feature and value to split on. Return the index and
+        value of the optimal split along with the split of the dataset.
+        Return None, None, None if there is no split which improves information
+        gain.
         Call the method like this:
-        X1, y1, X2, y2 = self._make_split(X, y, split_index, split_value)
-        X1, y1 is a subset of the data.
-        X2, y2 is the other subset of the data.
+        index, value, splits = self._choose_split_index(X, y)
+        X1, y1, X2, y2 = splits
         """
 
-        # * slice the split column from X with the split_index
 
-        # * if the variable of this column is categorical
-            # * select the indices of the rows in the column
-            #  with the split_value (T/F) into one set of indices (call them A)
-            # * select the indices of the rows in the column
-            # that don't have the split_value into another
-            #  set of indices (call them B)
-        # * else if the variable is not categorical
-             # * select the indices of the rows in the column
-            #  less than the split value into one set of indices (call them A)
-            # * select the indices of the rows in the column
-            #  greater or equal to  the split value into
-            # another set of indices (call them B)
-        return X[A], y[A], X[B], y[B]
+
+
+
+        # set these initial variables to None
+        split_index, split_value, splits = None, None, None
+        # we need to keep track of the maximum entropic gain
+        max_gain = 0
+
+        # if randomly_select_num_features:
+
+            # print("self.num_features", self.num_features)
+
+        if rand_features:
+            #  randomly select num_features of the potential features to consider
+            randomly_chosen_features = np.random.choice(X.shape[1], self.num_features, replace = False)
+            X = X[:, randomly_chosen_features]
+
+        # * for each column in X
+        for idx, column in enumerate(X.T):
+
+            # print("idx", idx)
+            #
+            # print("column", column)
+            # * set an array called values to be the
+            # unique values in that column (use np.unique)
+            values = np.unique(column)
+
+            # if there are less than 2 values, move on to the next column
+            if len(values) < 2:
+                continue
+
+            # * for each value V in the values array
+            for V in values:
+
+                # * make a temporary split (using the column index and V) with make_split
+                X1, y1, X2, y2 = self._make_split(X, y, idx, V)
+
+                # * calculate the information gain between the original y, y1 and y2
+                info_gain = self._information_gain(y, y1, y2)
+
+                # * if this gain is greater than the max_gain
+                if info_gain > max_gain:
+                    # * set max_gain, split_index, and split_value to be equal
+                    # to the current max_gain, column and value
+                    max_gain, split_index, split_value = info_gain, idx, V
+
+                    # * set the output splits to the current split setup (X1, y1, X2, y2)
+                    splits = X1, y1, X2, y2
+
+        return split_index, split_value, splits
+
+    def predict(self, X):
+        '''
+        INPUT:
+            - X: 2d numpy array
+        OUTPUT:
+            - y: 1d numpy array
+        Return an array of predictions for the feature matrix X.
+        '''
+
+        return np.apply_along_axis(self.root.predict_one, axis=1, arr=X)
+
+
+    # def predict(self, X):
     #
+    #     '''
+    #     Return a numpy array of the labels predicted for the given test data.
+    #     '''
+    #
+    #     # * Each one of the trees is allowed to predict on the same row of input data. The majority vote
+    #     # is the output of the whole forest. This becomes a single prediction.
+    #     prediction_list = []
+    #     for tree in self.forest:
+    #         prediction_list.append(tree.predict(X))
+    #
+    #     return np.apply_along_axis(sum(prediction_list, axis=0) / len(predictions_list), axis=0, arr=np.array(prediction_list))
+
+    def __str__(self):
+        '''
+        Return string representation of the Decision Tree. This will allow you to $:print tree
+        '''
+        return str(self.root)
+
+
+
     # def _information_gain(self, y, y1, y2):
     #     '''
     #     INPUT:
@@ -242,17 +388,21 @@ class DecisionTree(object):
     #
     #                 # * set the output splits to the current split setup (X1, y1, X2, y2)
     #     return split_index, split_value, splits
-    #
-    # def predict(self, X):
-    #     """
-    #     INPUT:
-    #         - X: 2d numpy array
-    #     OUTPUT:
-    #         - y: 1d numpy array
-    #     Return an array of predictions for the feature matrix X.
-    #     """
-    #
-    #     return np.apply_along_axis(self.root.predict_one, axis=1, arr=X)
+
+
+    def score(self, X, y):
+
+        """
+        Return the accuracy of the Random Forest for the given test data.
+        """
+
+        # * In this case you simply compute the accuracy formula as we have defined in class. Compare predicted y to
+        # the actual input y.
+        # error = (y - predict(X)) ** 2
+        #
+        # return 1 - (error ** 0.5 / len(y))
+        return sum(self.predict(X) == y) / len(y)
+
 
     def __str__(self):
         '''

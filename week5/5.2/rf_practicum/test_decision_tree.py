@@ -11,6 +11,7 @@ def test_entropy():
     message = 'Entropy value for %r: Got %.2f. Should be %.2f' \
               % (array, result, actual)
     n.assert_almost_equal(result, actual, 4, message)
+    print("test_entropy() passed")
 
 
 def test_gini():
@@ -20,6 +21,7 @@ def test_gini():
     message = 'Gini value for %r: Got %.2f. Should be %.2f' \
               % (array, result, actual)
     n.assert_almost_equal(result, actual, 4, message)
+    print("test_gini() passed")
 
 
 def fake_data():
@@ -31,13 +33,19 @@ def fake_data():
     y2 = np.array([0, 1])
     return X, y, X1, y1, X2, y2
 
-
+# import pprint
 def test_make_split():
     X, y, X1, y1, X2, y2 = fake_data()
+    # pprint.pprint(fake_data())
     split_index, split_value = 1, 'bat'
+
     dt = DT()
     dt.categorical = np.array([False, True])
     result = dt._make_split(X, y, split_index, split_value)
+
+
+    # print("result", result)
+
     try:
         X1_result, y1_result, X2_result, y2_result = result
     except ValueError:
@@ -48,6 +56,7 @@ def test_make_split():
     n.ok_(np.array_equal(y1, y1_result), message)
     n.ok_(np.array_equal(X2, X2_result), message)
     n.ok_(np.array_equal(y2, y2_result), message)
+    print("test_make_split() passed")
 
 
 def test_information_gain():
@@ -57,6 +66,8 @@ def test_information_gain():
     message = 'Information gain for:\n%r, %r, %r:\nGot %.3f. Should be %.3f' \
               % (y, y1, y2, result, actual)
     n.assert_almost_equal(result, actual, 4, message)
+    print("test_information_gain() passed")
+
 
 
 def test_choose_split_index():
@@ -64,7 +75,7 @@ def test_choose_split_index():
     index, value = 1, 'cat'
     dt = DT()
     dt.categorical = np.array([False, True])
-    result = dt._choose_split_index(X, y)
+    result = dt._choose_split_index(X, y, rand_features = False)
     try:
         split_index, split_value, splits = result
     except ValueError:
@@ -77,6 +88,30 @@ def test_choose_split_index():
               % (X, y, index, value, split_index, split_value)
     n.eq_(split_index, index, message)
     n.eq_(split_value, value, message)
+    print("test_choose_split_index() passed")
+
+
+
+
+def test_choose_split_index2():
+    X, y, X1, y1, X2, y2 = fake_data()
+    index, value = 1, 'cat'
+    dt = DT()
+    dt.categorical = np.array([False, True])
+    result = dt._choose_split_index(X, y, randomly_select_num_features = True)
+    try:
+        split_index, split_value, splits = result
+    except ValueError:
+        message = 'result not in correct form. Should be:\n' \
+                  '    split_index, split_value, splits'
+        n.assert_true(False, message)
+    message = 'choose split for data:\n%r\n%r\n' \
+              'split index, split value should be: %r, %r\n' \
+              'not: %r, %r' \
+              % (X, y, index, value, split_index, split_value)
+    n.eq_(split_index, index, message)
+    n.eq_(split_value, value, message)
+    print("test_choose_split_index() passed")
 
 def test_predict():
     root = TN()
@@ -95,5 +130,20 @@ def test_predict():
     message = 'Predicted %r. Should be %r.\nTree:\n%r\ndata:\n%r' \
               % (result, actual, root, data)
     n.eq_(result, actual, message)
+    print("test_predict() passed")
 
 
+def main():
+    X, y, X1, y1, X2, y2 = fake_data()
+    test_entropy()
+    test_gini()
+    test_make_split()
+
+    test_information_gain()
+    test_choose_split_index()
+    # test_choose_split_index2()
+
+    test_predict()
+
+
+main()
