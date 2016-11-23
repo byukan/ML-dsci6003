@@ -19,7 +19,7 @@ class RandomForest(object):
 
     def fit(self, X, y):
         '''
-        X:  two dimensional numpy array representing feature matrix
+        X:  two dimensional numpy array representing feature m,,atrix
                 for test data
         y:  numpy array representing labels for test data
         '''
@@ -33,7 +33,7 @@ class RandomForest(object):
        Create a random sample of the data with replacement
        Build a decision tree with that sample
 
-    Return the list of the decision trees created
+    Return the list of the decision trees created,
         :param X:
         :param y:
         :param y:
