@@ -39,12 +39,16 @@ class AdaBoostBinaryClassifier(object):
         '''
 
         # Initialize weights to 1 / n_samples
-            # For each of n_estimators, boost
-                # Append estimator, sample_weights and error to lists
+        sample_weight = np.ones(x.shape[0]) / x.shape[0]
 
+        # Start boosting
+        for i in xrange(self.n_estimator):
+            estimator, sample_weight, estimator_weight = \
+                self._boost(x, y, sample_weight)
 
-
-        pass
+            # Append estimator, sample_weights and error to lists
+            self.estimators_.append(estimator)
+            self.estimator_weight_[i] = estimator_weight
 
 
     def _boost(self, x, y, sample_weight):
@@ -65,17 +69,21 @@ class AdaBoostBinaryClassifier(object):
         estimator = clone(self.base_estimator)
 
         # Fit according to sample weights, emphasizing certain data points
+        estimator.fit(x, y, sample_weight=sample_weight)
 
-        # Calculate instances incorrectly classified and store as incorrect
+        # Instances incorrectly classified
+        incorrect = estimator.predict(x) != y
 
-        # calculate fraction of error as estimator_error
+        # Error fraction
+        estimator_error = np.sum(sample_weight * incorrect) / np.sum(sample_weight)
 
-        # Update estimator weights
+        # Update estimator weight
+        estimator_weight = self.learning_rate * (np.log((1. - estimator_error) / estimator_error))
 
-        # Update sample weights
+        # Update sample weight
+        sample_weight *= np.exp(estimator_weight * incorrect)
 
-        pass
-
+        return estimator, sample_weight, estimator_weight
 
     def predict(self, x):
         '''
@@ -85,13 +93,13 @@ class AdaBoostBinaryClassifier(object):
         OUTPUT:
         - labels: numpy array of predictions (0 or 1)
         '''
+        # get predictions
+        predictions = np.array([estimator.predict(x) for estimator in self.estimators_])
 
-        # get predictions from tree family
+        # negative predictions should be -1 instead of 0
+        predictions[predictions == 0] = -1
 
-        # set negative predictions to -1 instead of 0 (so we have -1 vs. 1)
-
-        pass
-
+        return np.dot(predictions.T, self.estimator_weight_) >= 0
 
     def score(self, x, y):
         '''
@@ -103,6 +111,6 @@ class AdaBoostBinaryClassifier(object):
         - score: float (accuracy score between 0 and 1)
         '''
 
+        y_predict = self.predict(x)
+        return np.sum(y_predict == y) / float(len(y))
 
-        # calculate score as usual
-        pass
