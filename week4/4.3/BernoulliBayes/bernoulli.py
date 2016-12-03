@@ -1,9 +1,12 @@
 # Put import statements here
 <<<<<<< HEAD
+<<<<<<< HEAD
 from collections import Counter
 import numpy as np
 import logging
 logging.basicConfig(level=logging.DEBUG, format=' %(asctime)s - %(levelname)s- %(message)s')
+=======
+>>>>>>> zipfian/master
 =======
 >>>>>>> zipfian/master
 
@@ -15,6 +18,7 @@ class BernoulliBayes(object):
         self.pvc = {}
 
     def fit(self,X,y):
+<<<<<<< HEAD
 <<<<<<< HEAD
         """
         Input:
@@ -53,6 +57,8 @@ class BernoulliBayes(object):
                 # add in the count to the conditional probability table P(v, c) = (N_{cv} + 1)/(Nc + 2)
                 self.pvc[word] = (Ncv + 1) / (self.prior[c] + 2)
 =======
+=======
+>>>>>>> zipfian/master
         '''
         Input: 
             - X: (2d numpy array) Contains input data
@@ -66,6 +72,9 @@ class BernoulliBayes(object):
             # for each word v in V
                 # count all docs in D containing v belonging to that class, Ncv
                 # add in the count to the conditional probability table P(v, c) = (N_{cv} + 1)/(Nc + 2)
+<<<<<<< HEAD
+>>>>>>> zipfian/master
+=======
 >>>>>>> zipfian/master
         # store P(v,c) and Priors
 
@@ -73,7 +82,10 @@ class BernoulliBayes(object):
 
     def predict(self,X):
 <<<<<<< HEAD
+<<<<<<< HEAD
         pass
+=======
+>>>>>>> zipfian/master
 =======
 >>>>>>> zipfian/master
         # For each point in X

@@ -4,6 +4,7 @@ from nose.tools import assert_equal
 import nose
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 X = np.array([[1, 0, 1],
               [1, 0, 0],
               [0, 1, 0],
@@ -33,6 +34,8 @@ def test_pvc():
 def test_predict():
     assert_equal(sum(bb.predict(X)), 3)
 =======
+=======
+>>>>>>> zipfian/master
 X = np.array([[1,0,1],
 			  [1,0,0],
 	 		  [0,1,0],
@@ -59,4 +62,7 @@ def test_pvc():
 def test_predict():
 	assert_equal(sum(bb.predict(X)),3)
 
+<<<<<<< HEAD
+>>>>>>> zipfian/master
+=======
 >>>>>>> zipfian/master
