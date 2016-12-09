@@ -98,4 +98,3 @@ class BernoulliBayes(object):
                             # score[c] += log(1 - P(v, c)
             # predict argmax(score[c])
         # Return predictions
-         
